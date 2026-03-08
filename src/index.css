@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================
+   CORE / BASE CONFIG
+   ========================================= */
+@layer base {
+  body {
+    @apply text-slate-900 bg-slate-50 antialiased;
+  }
+  
+  /* Fonte Inter (ou a que você estiver usando) */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-slate-900;
+  }
+}
+
+/* =========================================
+   ROLE: AUTH (Autenticação Pública)
+   ========================================= */
+@layer components {
+  /* Layout Principal da Autenticação */
+  .layout-auth-container {
+    @apply flex min-h-screen bg-white lg:bg-slate-50 overflow-hidden;
+  }
+
+  /* Lado Esquerdo: Showcase/Branding */
+  .layout-auth-showcase {
+    @apply hidden lg:flex lg:w-1/2 xl:w-[55%] bg-slate-900 relative overflow-hidden flex-col justify-between p-12 text-white shadow-2xl z-10;
+  }
+
+  /* Efeitos de Fundo do Showcase */
+  .layout-auth-bg-pattern {
+    @apply absolute inset-0 opacity-10;
+    background-image: radial-gradient(#D4AF37 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  
+  .layout-auth-blob {
+    @apply absolute rounded-full mix-blend-overlay blur-[80px] opacity-20;
+  }
+
+  /* Lado Direito: Formulários */
+  .layout-auth-form-area {
+    @apply w-full lg:w-1/2 xl:w-[45%] flex items-center justify-center p-6 md:p-12 bg-white relative;
+  }
+}
+
+/* =========================================
+   ROLE: INTERNAL (Admin / Staff / User)
+   ========================================= */
+@layer components {
+  /* Estrutura Base do Painel Interno */
+  .layout-internal-container {
+    @apply flex h-screen bg-slate-100 overflow-hidden;
+  }
+
+  /* Sidebar (Navegação Lateral) */
+  .sidebar-internal {
+    @apply w-64 bg-slate-900 text-white flex flex-col transition-all duration-300 hidden md:flex;
+  }
+
+  /* Main Content (Área de conteúdo) */
+  .main-content {
+    @apply flex-1 flex flex-col overflow-hidden relative;
+  }
+
+  /* Topbar (Header Interno) */
+  .topbar-internal {
+    @apply h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm;
+  }
+}
+
+/* =========================================
+   GLOBAL COMPONENTS (Botões, Inputs, Cards)
+   ========================================= */
+@layer components {
+  
+  /* Inputs Padrão Veloma */
+  .input-veloma {
+    @apply w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 
+           focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 
+           transition-all shadow-sm bg-slate-50/50;
+  }
+
+  /* Botão Primário (Escuro/Autoritário) */
+  .btn-primary {
+    @apply w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg 
+           text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 focus:ring-offset-white 
+           transition-all transform hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Botão Secundário (Dourado/Destaque) */
+  .btn-secondary {
+    @apply w-full flex justify-center py-3 px-4 border border-transparent rounded-xl 
+           text-sm font-bold text-slate-900 bg-amber-400 hover:bg-amber-500 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-white 
+           transition-all shadow-md hover:shadow-lg;
+  }
+
+  /* Card de Erro */
+  .alert-error {
+    @apply p-4 flex items-center gap-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl;
+  }
+
+  /* Títulos de Seção */
+  .section-title {
+    @apply text-3xl font-bold text-slate-900 tracking-tight text-center lg:text-left;
+  }
+  
+  .section-subtitle {
+    @apply text-slate-500 mt-2 text-lg text-center lg:text-left;
+  }
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
