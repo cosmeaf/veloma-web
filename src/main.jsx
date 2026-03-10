@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom"
 import App from "./App"
 import { AuthProvider } from "./context/AuthContext"
 import { LoadingProvider } from "./context/LoadingContext"
+import { ToastProvider } from "./components/ui/Toast"
 
 import "./index.css"
 
@@ -18,7 +19,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
         <LoadingProvider>
 
-          <App />
+          <ToastProvider>
+
+            <App />
+
+          </ToastProvider>
 
         </LoadingProvider>
 

@@ -1,86 +1,230 @@
 import React,{createContext,useContext,useEffect,useMemo,useState} from "react"
 import {storage} from "../utils/storage"
 import {authApi} from "../api/authApi"
+import api from "../api/axios"
 
 export const AuthContext=createContext(null)
 
 function normalizeError(err){
+
   const data=err?.response?.data
+
   if(!data) return "Erro inesperado."
+
   if(typeof data==="string") return data
+
   if(data.detail) return data.detail
+
   const firstKey=Object.keys(data)[0]
-  if(firstKey&&Array.isArray(data[firstKey])) return data[firstKey][0]
-  if(firstKey&&typeof data[firstKey]==="string") return data[firstKey]
+
+  if(firstKey && Array.isArray(data[firstKey])){
+    return data[firstKey][0]
+  }
+
+  if(firstKey && typeof data[firstKey]==="string"){
+    return data[firstKey]
+  }
+
   return "Erro ao processar."
+
 }
 
 export function AuthProvider({children}){
+
   const [user,setUser]=useState(null)
   const [booting,setBooting]=useState(true)
 
+  /*
+  ---------------------------------------
+  BOOTSTRAP DA SESSÃO
+  ---------------------------------------
+  */
   useEffect(()=>{
-    const u=storage.getUser()
-    if(u) setUser(u)
+
+    const u = storage.getUser()
+
+    if(u){
+      setUser(u)
+    }
+
     setBooting(false)
+
   },[])
 
-  const isAuthenticated=!!user
+  const isAuthenticated = !!user
 
-  const login=async({email,password})=>{
-    const res=await authApi.login({email,password})
+  /*
+  ---------------------------------------
+  LOGIN
+  ---------------------------------------
+  */
+  const login = async ({email,password})=>{
+
+    const res = await authApi.login({email,password})
+
     storage.setAuth(res.data)
+
     setUser(res.data.user)
-    return res.data.user
+
+    /*
+    ---------------------------------------
+    VERIFICA CONSENTIMENTO
+    ---------------------------------------
+    */
+
+    try{
+
+      const consentStatus = await api.get("user-consents/status/")
+
+      return {
+        user:res.data.user,
+        consentAccepted:consentStatus.data.accepted_all
+      }
+
+    }
+    catch(e){
+
+      /*
+      Se falhar assumimos que precisa consentir
+      */
+
+      return {
+        user:res.data.user,
+        consentAccepted:false
+      }
+
+    }
+
   }
 
-  const register=async({first_name,last_name,email,password,password2})=>{
-    const res=await authApi.register({first_name,last_name,email,password,password2})
+  /*
+  ---------------------------------------
+  REGISTER
+  ---------------------------------------
+  */
+  const register = async ({first_name,last_name,email,password,password2})=>{
+
+    const res = await authApi.register({
+      first_name,
+      last_name,
+      email,
+      password,
+      password2
+    })
+
     storage.setAuth(res.data)
+
     setUser(res.data.user)
-    return res.data.user
+
+    /*
+    Após registro usuário sempre precisa consentir
+    */
+
+    return {
+      user:res.data.user,
+      consentAccepted:false
+    }
+
   }
 
-  const recovery=async({email})=>{
-    const res=await authApi.recovery({email})
+  /*
+  ---------------------------------------
+  RECOVERY
+  ---------------------------------------
+  */
+  const recovery = async ({email})=>{
+
+    const res = await authApi.recovery({email})
+
     return res.data
+
   }
 
-  const verifyOtp=async({email,code})=>{
-    const res=await authApi.verifyOtp({email,code})
+  /*
+  ---------------------------------------
+  VERIFY OTP
+  ---------------------------------------
+  */
+  const verifyOtp = async ({email,code})=>{
+
+    const res = await authApi.verifyOtp({email,code})
+
     return res.data
+
   }
 
-  const resetPassword=async({token,password,password2})=>{
-    const res=await authApi.resetPassword({token,password,password2})
+  /*
+  ---------------------------------------
+  RESET PASSWORD
+  ---------------------------------------
+  */
+  const resetPassword = async ({token,password,password2})=>{
+
+    const res = await authApi.resetPassword({
+      token,
+      password,
+      password2
+    })
+
     return res.data
+
   }
 
-  const logout=async()=>{
-    try{await authApi.logout()}catch(e){}
+  /*
+  ---------------------------------------
+  LOGOUT
+  ---------------------------------------
+  */
+  const logout = async ()=>{
+
+    try{
+      await authApi.logout()
+    }
+    catch(e){}
+
     storage.clear()
+
     setUser(null)
+
   }
 
-  const value=useMemo(()=>({
+  const value = useMemo(()=>({
+
     user,
     booting,
     isAuthenticated,
+
     login,
     register,
     recovery,
     verifyOtp,
     resetPassword,
     logout,
-    getRole(){return user?.role||null},
+
+    getRole(){
+      return user?.role || null
+    },
+
     normalizeError
+
   }),[user,booting,isAuthenticated])
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
+
 }
 
 export function useAuth(){
-  const ctx=useContext(AuthContext)
-  if(!ctx) throw new Error("useAuth must be used within AuthProvider")
+
+  const ctx = useContext(AuthContext)
+
+  if(!ctx){
+    throw new Error("useAuth must be used within AuthProvider")
+  }
+
   return ctx
+
 }

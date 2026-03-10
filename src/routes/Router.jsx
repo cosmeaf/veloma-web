@@ -1,43 +1,45 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React from "react"
+import { Routes, Route } from "react-router-dom"
 
-import { routes } from "./routesConfig";
+import { routes } from "./routesConfig"
 
-// Layouts
-import AuthLayout from "../layouts/AuthLayout";
-import PublicLayout from "../layouts/PublicLayout"; // <--- IMPORTANTE: Adicionei de volta
+import AuthLayout from "../layouts/AuthLayout"
+import PublicLayout from "../layouts/PublicLayout"
 
-// Guards
-import AuthGuard from "../guards/AuthGuard";
-import RoleGuard from "../guards/RoleGuard";
+import PublicRoute from "../guards/PublicRoute"
+import AuthGuard from "../guards/AuthGuard"
+import RoleGuard from "../guards/RoleGuard"
+import ConsentGuard from "../guards/ConsentGuard"
 
-// Páginas Públicas
-import LandingPage from "../pages/public/LandingPage"; // <--- Adicionei
-import Proposal from "../pages/public/Proposal";       // <--- Adicionei
+import LandingPage from "../pages/public/LandingPage"
+import Proposal from "../pages/public/Proposal"
 
-// Páginas de Autenticação
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import Recovery from "../pages/auth/Recovery";
-import VerifyOtp from "../pages/auth/VerifyOtp";
-import ResetPassword from "../pages/auth/ResetPassword";
+import Login from "../pages/auth/Login"
+import Register from "../pages/auth/Register"
+import Recovery from "../pages/auth/Recovery"
+import VerifyOtp from "../pages/auth/VerifyOtp"
+import ResetPassword from "../pages/auth/ResetPassword"
+
+import ConsentRequired from "../pages/consents/ConsentRequired"
+
+import Error404 from "../pages/error/Error404"
 
 export default function Router() {
+
   return (
+
     <Routes>
-      {/* =========================================
-          1. ROTAS PÚBLICAS (Landing Page, Proposal)
-             Precisam vir primeiro para não serem pegas pelo redirect "/"
-         ========================================= */}
+
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/proposal" element={<Proposal />} />
       </Route>
 
-      {/* =========================================
-          2. ROTAS DE AUTENTICAÇÃO (Login, Register, etc.)
-         ========================================= */}
-      <Route element={<AuthLayout />}>
+      <Route element={
+        <PublicRoute>
+          <AuthLayout />
+        </PublicRoute>
+      }>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/recovery" element={<Recovery />} />
@@ -45,40 +47,54 @@ export default function Router() {
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
-      {/* =========================================
-          3. ROTAS INTERNAS (Dashboard e Sistema)
-             Protegidas por AuthGuard + RoleGuard
-         ========================================= */}
-      {routes.map((group) => {
-        const Layout = group.layout;
-        
+      <Route
+        path="/consents"
+        element={
+          <AuthGuard>
+            <ConsentRequired />
+          </AuthGuard>
+        }
+      />
+
+      {routes.map(group => {
+
+        const Layout = group.layout
+
         return (
+
           <Route
             key={group.role}
             element={
               <AuthGuard>
-                <RoleGuard allow={group.role}>
-                  <Layout />
-                </RoleGuard>
+                <ConsentGuard>
+                  <RoleGuard allow={group.role}>
+                    <Layout />
+                  </RoleGuard>
+                </ConsentGuard>
               </AuthGuard>
             }
           >
-            {group.routes.map((route) => (
+
+            {group.routes.map(route => (
+
               <Route
                 key={route.path}
                 path={route.path}
                 element={route.element}
               />
+
             ))}
+
           </Route>
-        );
+
+        )
+
       })}
 
-      {/* =========================================
-          4. ROTA DE FUGA (Catch-all)
-             Redireciona qualquer rota desconhecida para a Home
-         ========================================= */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Error404 />} />
+
     </Routes>
-  );
+
+  )
+
 }
